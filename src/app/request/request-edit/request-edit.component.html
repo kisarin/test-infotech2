@@ -1,0 +1,27 @@
+<div class="container">
+
+  <form [formGroup]="reqForm"(ngSubmit)="onSubmit()" >
+    <div>
+      <div class="form-group">
+        <label for="reqdate">Дата обращения</label>
+        <input type="text" class="form-control" id="reqdate"
+               formControlName="reqdate">
+      </div>
+      <div class="form-group">
+        <label for="reqtype">Характер обращения</label>
+        <select class="form-control" id="reqtype"
+                formControlName="reqtype">
+          <option *ngFor="let type of reqTypesDict" [value]="type.id">{{type.value}}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="reqdescr">Описание обращения</label>
+        <textarea class="form-control" rows="5" id="reqdescr"
+                  formControlName="reqdescr"></textarea>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-success" [disabled]="!reqForm.valid">Сохранить</button>
+    <button type="button" class="btn btn-danger" (click)="onCancel()">Отмена</button>
+  </form>
+</div>
+

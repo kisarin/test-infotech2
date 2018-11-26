@@ -1,0 +1,40 @@
+<button class="btn btn-primary" (click)="onNewRequest()">Добавить обращение</button>
+<div class="container">
+  <table class="table">
+    <thead>
+    <tr>
+      <th>Дата обращения</th>
+      <th>Характер обращения </th>
+      <th>Описание</th>
+      <th>Пользователь</th>
+      <th>Действия</th>
+    </tr>
+    </thead>
+    <tbody *ngFor="let request of requests; let i = index">
+      <tr>
+        <td>{{ request.date }}</td>
+        <td>{{ reqTypesDict[request.type].value }}</td>
+        <td>{{ request.description }}</td>
+        <td>{{ request.userId }}</td>
+        <td>
+          <button class="btn btn-primary" (click)="onEditRequest(request.id)">
+            <i class="glyphicon glyphicon-pencil"></i>
+          </button>
+          <button class="btn btn-danger" (click)="onDeleteRequest(request.id)">
+            <i class="glyphicon glyphicon-remove"></i>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!--  <div *ngFor="let request of requests"
+       class="col-sm-4">
+    <a
+      [routerLink]="['/request', request.id]">
+      <div class="caption">{{ request.description }}</div>
+    </a>
+  </div>-->
+
