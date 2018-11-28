@@ -45,16 +45,17 @@ export class AuthService {
 
   public handleAuthentication(): void {
     this.currentStatus = 'handleAuthentication start';
+
     this.loading = true;
     // When Auth0 hash parsed, get profile
     this.auth0.parseHash((err, authResult) => {
 
       //check authResult in log
       if (authResult) {
-        console.log(err);
-        console.log(authResult);
-        console.log('authResult.accessToken is ' + authResult.accessToken);
-        console.log('authResult.idToken is ' + authResult.idToken);
+        // console.log(err);
+        // console.log(authResult);
+        // console.log('authResult.accessToken is ' + authResult.accessToken);
+        // console.log('authResult.idToken is ' + authResult.idToken);
       }
 
       if (authResult && authResult.accessToken && authResult.idToken) {
@@ -73,23 +74,29 @@ export class AuthService {
 
   }
 
-  getUserInfo(authResult) {
-    console.log("getUserInfo");
-    // Use access token to retrieve user's profile and set session
-    this.auth0.client.userInfo(this.accessToken, (err, profile) => {
+  public getProfile(cb): void {
+    const accessToken = localStorage.getItem('access_token');
+    if (!accessToken) {
+      throw new Error('Access token must exist to fetch profile');
+    }
+
+    const self = this;
+    this.auth0.client.userInfo(accessToken, (err, profile) => {
       if (profile) {
-        //this.setSession(authResult, profile);
-      } else if (err) {
-        console.warn(`Error retrieving profile: ${err.error}`);
+        self.userProfile = profile;
       }
+      cb(err, profile);
     });
   }
 
   private setSession(authResult) {
-    console.log("setSession");
+    //console.log("setSession");
     // Set the time that the Access Token will expire at
     const expiresAt = JSON.stringify((authResult.expiresIn * 1000) + new Date().getTime());
+
     localStorage.setItem('expires_at', expiresAt);
+    localStorage.setItem('access_token', authResult.accessToken);
+    localStorage.setItem('id_token', authResult.idToken);
     //this.userProfile = profile;
     // Session set; set loggedIn and loading
     this.loggedIn = true;
@@ -99,29 +106,9 @@ export class AuthService {
     // Redirect to desired route
     this.router.navigateByUrl(localStorage.getItem('auth_redirect'));
 
-    localStorage.setItem('access_token', authResult.accessToken);
-    localStorage.setItem('id_token', authResult.idToken);
+
   }
 
-  /*private getFirebaseToken() {
-    // Prompt for login if no access token
-    if (!this.accessToken) {
-      this.login();
-    }
-    const getToken$ = () => {
-      return this.http
-        .get(`${environment.apiRoot}auth/firebase`, {
-          //const headers = new Headers({'Content-Type': 'application/json'});
-
-
-          //headers: new Headers().set('Authorization', `Bearer ${this.accessToken}`)
-        });
-    };
-    this.firebaseSub = getToken$().subscribe(
-      res => this._firebaseAuth(res),
-      err => console.error(`An error occurred fetching Firebase token: ${err.message}`)
-    );
-  }*/
 
   public logout(): void {
     // Ensure all auth items removed
@@ -137,8 +124,19 @@ export class AuthService {
     //this.afAuth.auth.signOut();
     // Return to homepage
     this.router.navigate(['/']);
-
-
   }
+
+  public isAuthenticated(): boolean {
+    // Check whether the current time is past the
+    // access token's expiry time
+    const expiresAt = JSON.parse(localStorage.getItem('expires_at') || '{}');
+    return new Date().getTime() < expiresAt;
+  }
+
+  getUserIdFromProfile() {
+    var sub = JSON.stringify(this.userProfile.sub);
+    return sub;
+  }
+
 
 }

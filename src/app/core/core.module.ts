@@ -9,6 +9,7 @@ import {HomeComponent} from "../home/home.component";
 import {PageNotFoundComponent} from "../not-found.component";
 import {CallbackComponent} from "../callback/callback.component";
 import {RequestsModule} from "../request/requests.module";
+import {ProfileComponent} from "../profile/profile.component";
 
 //import { ApiService } from './api.service';
 
@@ -23,6 +24,7 @@ import {RequestsModule} from "../request/requests.module";
   declarations: [
     HomeComponent,
     CallbackComponent,
+    ProfileComponent,
     PageNotFoundComponent
   ],
   exports: [

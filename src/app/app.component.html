@@ -4,13 +4,15 @@
       <a class="navbar-brand" href="#">Logo</a>
     </div>
     <ul class="nav navbar-nav">
-      <li class="active"><a routerLink="/"  routerLinkActive="active">Home</a></li>
-      <li><a routerLink="/requests"  routerLinkActive="active">Обращения</a></li>
+      <li class="active"><a routerLink="/">Home</a></li>
+      <li><a routerLink="/requests" >Обращения</a></li>
       <li *ngIf="!auth.loggedIn">
-        <a routerLink=""  routerLinkActive="active" (click)="auth.login()">Login</a>
+        <a routerLink=""  (click)="auth.login()"> Войти <span class="glyphicon glyphicon-log-in"></span></a>
+      </li><li *ngIf="auth.loggedIn">
+        <a routerLink="/profile" >Профиль</a>
       </li>
       <li *ngIf="auth.loggedIn">
-        <a routerLink=""  routerLinkActive="active" (click)="auth.logout()">Logout</a>
+        <a routerLink=""  routerLinkActive="active" (click)="auth.logout()">Выйти <span class="glyphicon glyphicon-log-out"></span></a>
       </li>
     </ul>
   </div>

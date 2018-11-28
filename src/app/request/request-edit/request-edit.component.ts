@@ -3,6 +3,9 @@ import {PeopleRequest} from "../../model/people-request";
 import {ActivatedRoute, Router, Params} from "@angular/router";
 import {RequestService} from "../request.service";
 import {FormGroup, FormControl, Validators} from "@angular/forms";
+import {UserService} from "../../users/user.service";
+import {AuthService} from "../../auth/auth.service";
+import {User} from "../../model/user";
 
 @Component({
   selector: 'app-request-edit',
@@ -13,6 +16,8 @@ export class RequestEditComponent implements OnInit{
   request: PeopleRequest;
   editMode = false;
   reqId: number;
+  user: User;
+  profile: any;
   reqTypesDict = [
     {id: 0, value: 'Обращение по телефону'},
     {id: 1, value: 'Обращение по ЕПГУ'},
@@ -20,7 +25,9 @@ export class RequestEditComponent implements OnInit{
   ];
   reqForm: FormGroup;
 
-  constructor ( private route: ActivatedRoute, private router: Router, private reqServ: RequestService) {}
+  constructor ( private route: ActivatedRoute, private router: Router,
+                private reqServ: RequestService, private userServise: UserService,
+                private authService: AuthService) {}
 
   ngOnInit() {
     this.route.params.subscribe(
@@ -33,7 +40,8 @@ export class RequestEditComponent implements OnInit{
   }
 
   initForm() {
-    //console.log('Init form')
+    this.user = this.findUser();
+
     let reqDate = '';
     let reqType = 0;
     let reqDescr = '';
@@ -46,13 +54,22 @@ export class RequestEditComponent implements OnInit{
         reqDescr = this.request.description;
       }
     }
-
     this.reqForm = new FormGroup({
       'reqdate': new FormControl(reqDate, Validators.required),
       'reqtype': new FormControl(reqType),
       'reqdescr': new FormControl(reqDescr)});
     //console.log(this.reqForm.value);
 
+    this.user = this.userServise.getUserById(1);//this.findUserId();
+    //console.log(this.authService.getUserIdFromProfile());
+
+  }
+
+
+
+  findUser() {
+    let authUserId = this.authService.getUserIdFromProfile();
+    return this.userServise.getUserByToken(authUserId);
   }
 
 
@@ -62,10 +79,13 @@ export class RequestEditComponent implements OnInit{
     req.date = this.reqForm.get('reqdate').value;
     req.description = this.reqForm.get('reqdescr').value;
     req.type = +this.reqForm.get('reqtype').value;
-    req.userId = 1;
+
+    //find userId
+    req.userId = this.user.id;
 
     if (this.editMode) {
-      //console.log(this.reqForm.value);
+      //if edit mode, userId not change
+      req.userId = this.request.userId;
       this.reqServ.updateRequest(this.reqId, req);
     }
     else {

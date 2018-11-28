@@ -8,6 +8,12 @@ import { AppRoutingModule } from "./app.routing.module";
 import { CoreModule } from "./core/core.module";
 import { AuthService } from "./auth/auth.service";
 import {RequestService} from "./request/request.service";
+import {AuthGuard} from "./auth/auth.guard";
+import {ApiService} from "./core/api.service";
+import {UserService} from "./users/user.service";
+
+//import { AngularFireModule } from 'angularfire2';
+//import {environment} from "../environments/environment";
 
 @NgModule({
   declarations: [
@@ -18,9 +24,10 @@ import {RequestService} from "./request/request.service";
     FormsModule,
     HttpModule,
     CoreModule,
+    //AngularFireModule.initializeApp(environment.firebase),
     AppRoutingModule
   ],
-  providers: [ AuthService, RequestService ],
+  providers: [ AuthService, RequestService, ApiService,UserService, AuthGuard ],
   bootstrap: [ AppComponent ]
 })
 export class AppModule { }
