@@ -11,21 +11,28 @@ export class ProfileComponent implements OnInit {
 
   profile: any;
   user: User;
+  auth0UserId: string;
 
   constructor(public auth: AuthService, private userService: UserService) { }
 
   ngOnInit() {
-    //console.log('profile component loaded');
+    console.log('1 profile component loaded');
+    let sub = '';
+
     if (this.auth.userProfile) {
       this.profile = this.auth.userProfile;
+      console.log('2 get profile from auth ' + this.profile.sub);
+      console.log(this.profile);
     } else {
       this.auth.getProfile((err, profile) => {
         this.profile = profile;
+        console.log('3 getProfile '  + this.profile.sub);
+        console.log(this.profile);
+        this.auth0UserId = this.profile.sub;
+        console.log('4 sub ' + this.auth0UserId);
+        this.user = this.userService.getUserByToken(this.auth0UserId);
       });
     }
-    //let sub = JSON.stringify(this.profile.sub);
-    //let sub = this.auth.getUserIdFromProfile();
-    //this.user = this.userService.getUserByToken(sub);
   }
 
 }

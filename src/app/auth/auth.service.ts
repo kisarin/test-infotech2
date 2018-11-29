@@ -10,6 +10,7 @@ import {Observable} from "rxjs";
 export class AuthService {
   userProfile: any;
   refreshSubscription: any;
+  profileUserSub: string;
 
   private auth0 = new auth0.WebAuth({
     clientID: environment.auth.clientId,
@@ -22,13 +23,8 @@ export class AuthService {
   constructor(private router: Router) {}
 
   public login(): void {
-    // Set redirect after login
-    //const _redirect = redirect ? redirect : this.router.url;
-    //localStorage.setItem('auth_redirect', _redirect);
-
     // Auth0 authorize request
     this.auth0.authorize();
-
   }
 
   public handleAuthentication(): void {
@@ -50,7 +46,7 @@ export class AuthService {
 
   }
 
-  public getProfile(cb): void {
+  public getProfile(cb) {
     const accessToken = localStorage.getItem('access_token');
     if (!accessToken) {
       throw new Error('Access token must exist to fetch profile');
@@ -141,8 +137,17 @@ export class AuthService {
   }
 
   getUserIdFromProfile() {
-    const sub = JSON.stringify(this.userProfile.sub);
-    return sub;
+    if (this.userProfile) {
+      console.log('getUserIdFromProfile userProfile 1');
+      return this.userProfile.sub;
+    } else {
+      this.getProfile((err, profile) => {
+        this.userProfile = profile;
+        console.log('getUserIdFromProfile userProfile 2');
+        console.log(profile);
+        return this.userProfile.sub;
+      });
+    }
   }
 
 

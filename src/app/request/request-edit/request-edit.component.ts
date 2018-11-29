@@ -17,7 +17,9 @@ export class RequestEditComponent implements OnInit{
   editMode = false;
   reqId: number;
   user: User;
+
   profile: any;
+
   reqTypesDict = [
     {id: 0, value: 'Обращение по телефону'},
     {id: 1, value: 'Обращение по ЕПГУ'},
@@ -27,26 +29,47 @@ export class RequestEditComponent implements OnInit{
 
   constructor ( private route: ActivatedRoute, private router: Router,
                 private reqServ: RequestService, private userServise: UserService,
-                private authService: AuthService) {}
+                private auth: AuthService) {}
 
   ngOnInit() {
+
     this.route.params.subscribe(
       (params: Params) => {
         this.reqId = +params['id'];
         this.editMode = params['id'] != null;
-        this.initForm();
-      }
-    )
+        this.initProfile();
+
+      });
+  }
+
+  initProfile() {
+
+    let sub = '';
+    if (this.auth.userProfile) {
+      this.profile = this.auth.userProfile;
+      sub = this.profile.sub;
+      console.log('1 Req Init get profile from auth.userProfile ' + sub);
+    } else {
+      this.auth.getProfile((err, profile) => {
+        this.profile = profile;
+        sub = this.profile.sub;
+        console.log('2 Req Init get profile from auth.getProfile ' + sub);
+        this.findUser();
+      });
+    }
+
+    console.log('initForm start');
+    this.initForm();
   }
 
   initForm() {
-    this.user = this.findUser();
+
+    this.findUser();
 
     let reqDate = '';
     let reqType = 0;
     let reqDescr = '';
     if (this.editMode) {
-      //console.log('Edit mode is ' + this.editMode);
       this.request = this.reqServ.getRequest(this.reqId);
       if (this.request) {
         reqDate = this.request.date;
@@ -58,18 +81,21 @@ export class RequestEditComponent implements OnInit{
       'reqdate': new FormControl(reqDate, Validators.required),
       'reqtype': new FormControl(reqType),
       'reqdescr': new FormControl(reqDescr)});
-    //console.log(this.reqForm.value);
 
-    this.user = this.userServise.getUserById(1);//this.findUserId();
-    //console.log(this.authService.getUserIdFromProfile());
 
+    console.log('initForm end');
+    //this.findUser();
   }
 
 
 
   findUser() {
-    let authUserId = this.authService.getUserIdFromProfile();
-    return this.userServise.getUserByToken(authUserId);
+    console.log('findUser');
+    if (this.profile) {
+      this.user = this.userServise.getUserByToken(this.profile.sub);
+    } else {
+      this.user = this.userServise.getUserById(1);
+    }
   }
 
 

@@ -13,6 +13,7 @@ import {ApiService} from "./core/api.service";
 import {UserService} from "./users/user.service";
 import {ProfileComponent} from "./profile/profile.component";
 import {CallbackComponent} from "./callback/callback.component";
+import {RequestsModule} from "./request/requests.module";
 
 //import { AngularFireModule } from 'angularfire2';
 //import {environment} from "../environments/environment";
@@ -28,6 +29,7 @@ import {CallbackComponent} from "./callback/callback.component";
     FormsModule,
     HttpModule,
     CoreModule,
+    RequestsModule,
     //AngularFireModule.initializeApp(environment.firebase),
     AppRoutingModule
   ],

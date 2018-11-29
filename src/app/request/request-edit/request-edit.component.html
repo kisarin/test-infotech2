@@ -22,8 +22,9 @@
     <button type="submit" class="btn btn-success" [disabled]="!reqForm.valid">Сохранить</button>
     <button type="button" class="btn btn-danger" (click)="onCancel()">Отмена</button>
   </form>
+  <div>
+  <p>Пользователь: {{ user.lastName + ' ' + user.firstName }} </p>
+  </div>
 </div>
-<div>
-<p>Пользователь {{ user.username }} </p>
-</div>
+
 
