@@ -12,9 +12,10 @@ export class ProfileComponent implements OnInit {
   profile: any;
   user: User;
 
-  constructor(public auth: AuthService, userService: UserService) { }
+  constructor(public auth: AuthService, private userService: UserService) { }
 
   ngOnInit() {
+    //console.log('profile component loaded');
     if (this.auth.userProfile) {
       this.profile = this.auth.userProfile;
     } else {
@@ -22,8 +23,9 @@ export class ProfileComponent implements OnInit {
         this.profile = profile;
       });
     }
-
-    //this.user = this.userService.getUserByToken();
+    //let sub = JSON.stringify(this.profile.sub);
+    //let sub = this.auth.getUserIdFromProfile();
+    //this.user = this.userService.getUserByToken(sub);
   }
 
 }

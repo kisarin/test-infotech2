@@ -11,13 +11,17 @@ import {RequestService} from "./request/request.service";
 import {AuthGuard} from "./auth/auth.guard";
 import {ApiService} from "./core/api.service";
 import {UserService} from "./users/user.service";
+import {ProfileComponent} from "./profile/profile.component";
+import {CallbackComponent} from "./callback/callback.component";
 
 //import { AngularFireModule } from 'angularfire2';
 //import {environment} from "../environments/environment";
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    ProfileComponent,
+    CallbackComponent
   ],
   imports: [
     BrowserModule,

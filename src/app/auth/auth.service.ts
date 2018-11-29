@@ -1,14 +1,15 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import {Http, Headers, Response} from "@angular/http";
 import * as auth0 from 'auth0-js';
-import {environment} from "../../environments/environment";
-import {Subscription} from "rxjs";
+import { environment } from "../../environments/environment";
+import {Observable} from "rxjs";
 
 (window as any).global = window;
 
 @Injectable()
 export class AuthService {
+  userProfile: any;
+  refreshSubscription: any;
 
   private auth0 = new auth0.WebAuth({
     clientID: environment.auth.clientId,
@@ -18,57 +19,32 @@ export class AuthService {
     scope: environment.auth.scope
   });
 
-  accessToken: string;
-  userProfile: any;
-  // Track authentication status
-  loggedIn: boolean;
-  loading: boolean;
-  // Track Firebase authentication status
-  //loggedInFirebase: boolean;
-  // Subscribe to the Firebase token stream
-  //firebaseSub: Subscription;
-  // Subscribe to Firebase renewal timer stream
-  //refreshFirebaseSub: Subscription;
-  currentStatus = '';
+  constructor(private router: Router) {}
 
-  constructor(public router: Router, //private afAuth: AngularFireAuth,
-              private http: Http) {}
-
-  public login(redirect?: string): void {
+  public login(): void {
     // Set redirect after login
-    const _redirect = redirect ? redirect : this.router.url;
-    localStorage.setItem('auth_redirect', _redirect);
+    //const _redirect = redirect ? redirect : this.router.url;
+    //localStorage.setItem('auth_redirect', _redirect);
+
     // Auth0 authorize request
     this.auth0.authorize();
-    this.currentStatus = 'login';
+
   }
 
   public handleAuthentication(): void {
-    this.currentStatus = 'handleAuthentication start';
-
-    this.loading = true;
     // When Auth0 hash parsed, get profile
     this.auth0.parseHash((err, authResult) => {
-
-      //check authResult in log
-      if (authResult) {
-        // console.log(err);
-        // console.log(authResult);
-        // console.log('authResult.accessToken is ' + authResult.accessToken);
-        // console.log('authResult.idToken is ' + authResult.idToken);
-      }
-
       if (authResult && authResult.accessToken && authResult.idToken) {
-        window.location.hash = '';
+        //window.location.hash = '';
         // Store access token
-        this.accessToken = authResult.accessToken;
-        this.currentStatus = 'setSession';
+        //this.accessToken = authResult.accessToken;
         this.setSession(authResult);
-
+        this.router.navigate(['/']);
       } else if (err) {
         this.router.navigate(['/']);
-        this.loading = false;
-        console.error(`Error authenticating: ${err.error}`);
+        console.log(err);
+        alert(`Error: ${err.error}. Check the console for further details.`);
+        //console.error(`Error authenticating: ${err.error}`);
       }
     });
 
@@ -79,7 +55,6 @@ export class AuthService {
     if (!accessToken) {
       throw new Error('Access token must exist to fetch profile');
     }
-
     const self = this;
     this.auth0.client.userInfo(accessToken, (err, profile) => {
       if (profile) {
@@ -90,38 +65,29 @@ export class AuthService {
   }
 
   private setSession(authResult) {
-    //console.log("setSession");
     // Set the time that the Access Token will expire at
-    const expiresAt = JSON.stringify((authResult.expiresIn * 1000) + new Date().getTime());
+    const expiresAt = JSON.stringify((authResult.expiresIn * 1000) + Date.now());
 
     localStorage.setItem('expires_at', expiresAt);
     localStorage.setItem('access_token', authResult.accessToken);
     localStorage.setItem('id_token', authResult.idToken);
-    //this.userProfile = profile;
-    // Session set; set loggedIn and loading
-    this.loggedIn = true;
-    this.loading = false;
-    // Get Firebase token
-    //this.getFirebaseToken();
+
+    this.scheduleRenewal();
+
     // Redirect to desired route
-    this.router.navigateByUrl(localStorage.getItem('auth_redirect'));
-
-
+    //this.router.navigateByUrl(localStorage.getItem('auth_redirect'));
   }
 
 
   public logout(): void {
-    // Ensure all auth items removed
+    // Remove tokens and expiry time from localStorage
     localStorage.removeItem('access_token');
     localStorage.removeItem('id_token');
     localStorage.removeItem('expires_at');
     localStorage.removeItem('auth_redirect');
-    this.accessToken = undefined;
-    this.userProfile = undefined;
-    this.loggedIn = false;
-    // Sign out of Firebase
-    //this.loggedInFirebase = false;
-    //this.afAuth.auth.signOut();
+    //this.userProfile = undefined;
+    this.unscheduleRenewal();
+
     // Return to homepage
     this.router.navigate(['/']);
   }
@@ -130,11 +96,52 @@ export class AuthService {
     // Check whether the current time is past the
     // access token's expiry time
     const expiresAt = JSON.parse(localStorage.getItem('expires_at') || '{}');
-    return new Date().getTime() < expiresAt;
+    return Date.now() < expiresAt;
+  }
+
+  public renewToken() {
+    this.auth0.checkSession({}, (err, result) => {
+      if (err) {
+        alert(`Could not get a new token (${err.error}: ${err.error_description}).`);
+      } else {
+        alert(`Successfully renewed auth!`);
+        this.setSession(result);
+      }
+    });
+  }
+
+  public scheduleRenewal() {
+    if(!this.isAuthenticated()) return;
+    this.unscheduleRenewal();
+
+    const expiresAt = JSON.parse(window.localStorage.getItem('expires_at'));
+
+    const source = Observable.of(expiresAt).flatMap(
+      expiresAt => {
+
+        const now = Date.now();
+
+        // Use the delay in a timer to
+        // run the refresh at the proper time
+        return Observable.timer(Math.max(1, expiresAt - now));
+      });
+
+    // Once the delay time from above is
+    // reached, get a new JWT and schedule
+    // additional refreshes
+    this.refreshSubscription = source.subscribe(() => {
+      this.renewToken();
+      this.scheduleRenewal();
+    });
+  }
+
+  public unscheduleRenewal() {
+    if(!this.refreshSubscription) return;
+    this.refreshSubscription.unsubscribe();
   }
 
   getUserIdFromProfile() {
-    var sub = JSON.stringify(this.userProfile.sub);
+    const sub = JSON.stringify(this.userProfile.sub);
     return sub;
   }
 
