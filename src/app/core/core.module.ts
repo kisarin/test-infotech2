@@ -7,8 +7,7 @@ import { DatePipe } from '@angular/common';
 import {HttpModule} from "@angular/http";
 import {HomeComponent} from "../home/home.component";
 import {PageNotFoundComponent} from "../not-found.component";
-import {CallbackComponent} from "../callback/callback.component";
-import {RequestsModule} from "../request/requests.module";
+
 
 //import { ApiService } from './api.service';
 
@@ -17,17 +16,15 @@ import {RequestsModule} from "../request/requests.module";
     CommonModule,
     RouterModule,
     HttpModule, // AuthModule is a sibling and can use this without us exporting it
-    FormsModule,
-    RequestsModule
+    FormsModule
   ],
   declarations: [
     HomeComponent,
-    CallbackComponent,
     PageNotFoundComponent
   ],
   exports: [
-    FormsModule, // Export FormsModule so CommentsModule can use it
-    CallbackComponent
+    FormsModule // Export FormsModule so CommentsModule can use it
+
   ]
 })
 export class CoreModule {

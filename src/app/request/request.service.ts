@@ -13,9 +13,9 @@ export class RequestService {
   ];
 
   setRequests(requests: PeopleRequest[]) {
-    this.requests = requests;
-    this.requestsChanged.next(this.requests.slice());
-  }
+  this.requests = requests;
+  this.requestsChanged.next(this.requests.slice());
+}
 
   getRequests() {
     return this.requests.slice();

@@ -3,6 +3,7 @@ import {PeopleRequest} from "../../model/people-request";
 import {RequestService} from "../request.service";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Subscription} from "rxjs";
+import {ApiService} from "../../core/api.service";
 
 @Component({
   selector: 'app-request-list',
@@ -20,7 +21,7 @@ export class RequestListComponent implements OnInit, OnDestroy {
   ];
 
   constructor (private reqService: RequestService,
-  private route: ActivatedRoute, private router: Router) {}
+  private route: ActivatedRoute, private router: Router, private api: ApiService) {}
 
   ngOnInit() {
     this.requests = this.reqService.getRequests();
@@ -44,6 +45,14 @@ export class RequestListComponent implements OnInit, OnDestroy {
   onDeleteRequest(id: number) {
     this.reqService.deleteRequest(id);
     this.requests = this.reqService.getRequests();
+  }
+
+  onSaveRequests() {
+    this.api.storeRequests()
+      .subscribe(
+        (response) => console.log(response),
+        (error) => console.log(error)
+      );
   }
 
   ngOnDestroy() {
